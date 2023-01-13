@@ -16,8 +16,9 @@ export class PipelineStack extends cdk.Stack {
       crossAccountKeys: false,
     });
     const sourceOutput = new Artifact("SourceOutput");
+    const serviceOutput = new Artifact("serviceOutput")
     pipeline.addStage({
-      stageName:"Source",
+      stageName: "Source",
       actions: [
         new GitHubSourceAction({
           owner: "Suresh14531453",
@@ -26,6 +27,14 @@ export class PipelineStack extends cdk.Stack {
           actionName: "Pipeline_Source",
           oauthToken: SecretValue.secretsManager("git-token"),
           output: sourceOutput,
+        }),
+        new GitHubSourceAction({
+          owner: "Suresh14531453",
+          repo: "Aws_test_backend",
+          branch: "master",
+          actionName: "Service_Source",
+          oauthToken: SecretValue.secretsManager("git-token"),
+          output: serviceOutput,
         }),
       ],
     })
@@ -62,5 +71,4 @@ export class PipelineStack extends cdk.Stack {
       ],
     });
   }
-
 }
