@@ -1,53 +1,79 @@
 import * as cdk from 'aws-cdk-lib';
+import { Construct } from 'constructs';
+import { Artifact, Pipeline } from 'aws-cdk-lib/aws-codepipeline';
+import { CodeBuildAction, GitHubSourceAction,CloudFormationCreateUpdateStackAction } from 'aws-cdk-lib/aws-codepipeline-actions';
 import { SecretValue } from 'aws-cdk-lib';
 import { BuildSpec, LinuxBuildImage, PipelineProject } from 'aws-cdk-lib/aws-codebuild';
-import { Artifact, Pipeline } from 'aws-cdk-lib/aws-codepipeline';
-import { CloudFormationCreateUpdateStackAction, CodeBuildAction, GitHubSourceAction } from 'aws-cdk-lib/aws-codepipeline-actions';
-import { Construct } from 'constructs';
+import { ServiceStack } from './service-stack';
+
+
+
 
 // import * as sqs from 'aws-cdk-lib/aws-sqs';
 
 export class PipelineStack extends cdk.Stack {
+
+  private readonly pipeline: Pipeline;
+  private readonly cdkBuildOutput: Artifact;
+  private readonly serviceBuildOutput: Artifact;
+
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    const pipeline = new Pipeline(this, "Pipeline", {
+   this.pipeline=new Pipeline(this,'Pipeline',{
       pipelineName: "Pipeline",
       crossAccountKeys: false,
-    });
-    const sourceOutput = new Artifact("SourceOutput");
-    const serviceOutput = new Artifact("serviceOutput")
-    pipeline.addStage({
-      stageName: "Source",
-      actions: [
-        new GitHubSourceAction({
-          owner: "Suresh14531453",
-          repo: "aws_test",
-          branch: "master",
-          actionName: "Pipeline_Source",
-          oauthToken: SecretValue.secretsManager("git-token"),
-          output: sourceOutput,
-        }),
-        new GitHubSourceAction({
-          owner: "Suresh14531453",
-          repo: "Aws_test_backend",
-          branch: "master",
-          actionName: "Service_Source",
-          oauthToken: SecretValue.secretsManager("git-token"),
-          output: serviceOutput,
-        }),
+      restartExecutionOnUpdate:true,
+      
+    })
+    const cdkSourceOutput = new Artifact("CDKSourceOutput");
+    const serviceSourceOutput=new Artifact("serviceSourceOutput")
+
+  
+    this.pipeline.addStage({
+      stageName:"Source",
+      actions:
+      [
+       new GitHubSourceAction({
+        owner: "Suresh14531453",
+        repo: "aws_test",
+        branch: "master",
+        actionName: "Pipeline_Source",
+        oauthToken: SecretValue.secretsManager("git-token"),
+        output:cdkSourceOutput
+        
+
+       }),
+
+       new GitHubSourceAction({
+        owner: "Suresh14531453",
+        repo: "Aws_test_backend",
+        branch: "master",
+        actionName: "Service_Source",
+        oauthToken: SecretValue.secretsManager("git-token"),
+        output:serviceSourceOutput
+        
+
+       }),
+      
+       
       ],
     })
 
-    const cdkBuildOutput = new Artifact("CdkBuildOutput");
-    const serviceBuildOutput = new Artifact("serviceBuildOutput");
-    pipeline.addStage({
+
+
+
+    this.cdkBuildOutput = new Artifact("CdkBuildOutput");
+    this.serviceBuildOutput = new Artifact("ServiceBuildOutput");
+
+    this.pipeline.addStage({
       stageName: "Build",
       actions: [
         new CodeBuildAction({
+          
           actionName: "CDK_Build",
-          input: sourceOutput,
-          outputs: [cdkBuildOutput],
+          input: cdkSourceOutput,
+          outputs: [this.cdkBuildOutput],
           project: new PipelineProject(this, "CdkBuildProject", {
             environment: {
               buildImage: LinuxBuildImage.STANDARD_5_0,
@@ -57,11 +83,12 @@ export class PipelineStack extends cdk.Stack {
             ),
           }),
         }),
+
         new CodeBuildAction({
-          actionName: "service_Build",
-          input: serviceOutput,
-          outputs: [serviceBuildOutput],
-          project: new PipelineProject(this, "serviceBuildOutput", {
+          actionName: "Service_Build",
+          input: serviceSourceOutput,
+          outputs: [this.serviceBuildOutput],
+          project: new PipelineProject(this, "ServiceBuildProject", {
             environment: {
               buildImage: LinuxBuildImage.STANDARD_5_0,
             },
@@ -70,16 +97,46 @@ export class PipelineStack extends cdk.Stack {
             ),
           }),
         }),
+      
       ],
     });
-    pipeline.addStage({
+
+
+    
+
+
+    this.pipeline.addStage({
       stageName: "Pipeline_Update",
       actions: [
         new CloudFormationCreateUpdateStackAction({
           actionName: "Pipeline_Update",
           stackName: "PipelineStack",
-          templatePath: cdkBuildOutput.atPath("PipelineStack.template.json"),
+          templatePath: this.cdkBuildOutput.atPath("PipelineStack.template.json"),
           adminPermissions: true,
+        }),
+      ],
+    });
+   
+
+  }
+
+  public addServiceStage(serviceStack: ServiceStack, stageName: string) {
+    this.pipeline.addStage({
+      stageName: stageName,
+      actions: [
+        new CloudFormationCreateUpdateStackAction({
+          actionName: "Service_Update",
+          stackName: serviceStack.stackName,
+          templatePath: this.cdkBuildOutput.atPath(
+            `${serviceStack.stackName}.template.json`
+          ),
+          adminPermissions: true,
+          parameterOverrides: {
+            ...serviceStack.serviceCode.assign(
+              this.serviceBuildOutput.s3Location
+            ),
+          },
+          extraInputs: [this.serviceBuildOutput],
         }),
       ],
     });
