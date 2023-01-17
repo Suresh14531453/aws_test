@@ -20,5 +20,6 @@ const serviceStackProd = new ServiceStack(app, "ServiceStackProd", {
 //   emailAddress: "sureshsahu1453@gmail.com",
 // });
 // pipelineStack.addServiceStage(serviceStackProd,"service")
-pipelineStack.addServiceStage(serviceStackTest, "Test");
 pipelineStack.addServiceStage(serviceStackProd, "Prod");
+pipelineStack.addServiceStage(serviceStackTest, "Test");
+
