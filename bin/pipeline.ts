@@ -12,7 +12,7 @@ const serviceStackTest = new ServiceStack(app, "ServiceStackTest", {
   stageName: "Test",
 });
 const serviceStackProd = new ServiceStack(app, "ServiceStackProd", {
-  stageName: "Prod",
+  stageName: "ServiceStackProd",
 });
 
 // new BillingStack(app, "BillingStack", {
@@ -21,5 +21,5 @@ const serviceStackProd = new ServiceStack(app, "ServiceStackProd", {
 // });
 // pipelineStack.addServiceStage(serviceStackProd,"service")
 pipelineStack.addServiceStage(serviceStackTest, "Test");
-pipelineStack.addServiceStage(serviceStackProd, "Prod");
+pipelineStack.addServiceStage(serviceStackProd, "ServiceStackProd");
 
