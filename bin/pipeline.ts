@@ -19,4 +19,6 @@ new BillingStack(app, "BillingStack", {
   budgetAmount: 5,
   emailAddress: "sureshsahu1453@gmail.com",
 });
-pipelineStack.addServiceStage(serviceStackProd,"service")
+// pipelineStack.addServiceStage(serviceStackProd,"service")
+pipelineStack.addServiceStage(serviceStackTest, "Test");
+pipelineStack.addServiceStage(serviceStackProd, "Prod");
