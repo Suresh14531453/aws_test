@@ -4,22 +4,25 @@ import { HttpLambdaIntegration } from '@aws-cdk/aws-apigatewayv2-integrations-al
 import { Construct } from "constructs"
 import { HttpApi } from "@aws-cdk/aws-apigatewayv2-alpha";
 
-
+interface ServiceStackProps extends StackProps {
+    stageName: string;
+}
 export class ServiceStack extends Stack {
+
     public readonly serviceCode: CfnParametersCode;
-    constructor(scope: Construct, id: string, props?: StackProps) {
+    constructor(scope: Construct, id: string, props:ServiceStackProps) {
         super(scope, id, props)
         this.serviceCode = Code.fromCfnParameters();
-        const lambda=new Function(this, "serviceLambda", {
+        const lambda = new Function(this, "serviceLambda", {
             runtime: Runtime.NODEJS_16_X,
             handler: "src/lambda.handler",
             code: this.serviceCode,
             functionName: "ServiceLambda",
         })
-        new HttpApi(this,"ServiceApi",{
-            defaultIntegration:new HttpLambdaIntegration("LambdaIntegration",lambda),
-            apiName: "MyService"
+        new HttpApi(this, "ServiceApi", {
+            defaultIntegration: new HttpLambdaIntegration("LambdaIntegration", lambda),
+            apiName: `MyService${props.stageName}`
         })
     }
-    
+
 }

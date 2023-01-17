@@ -1,6 +1,7 @@
 import * as cdk from 'aws-cdk-lib';
 import { Template } from 'aws-cdk-lib/assertions';
 import * as Pipeline from '../lib/pipeline-stack';
+import { ServiceStack } from '../lib/service-stack';
 
 // example test. To run these tests, uncomment this file along with the
 // example resource in lib/pipeline-stack.ts
@@ -14,4 +15,26 @@ test('SQS Queue Created', () => {
   // template.hasResourceProperties('AWS::SQS::Queue', {
   //   VisibilityTimeout: 300
   // });
+});
+test("Adding service stage", () => {
+  // GIVEN
+  const app = new cdk.App();
+  const serviceStack = new ServiceStack(app, "ServiceStack", {
+    stageName: "Test",
+  });
+  const pipelineStack = new Pipeline.PipelineStack(app, "PipelineStack");
+
+  // WHEN
+  pipelineStack.addServiceStage(serviceStack, "Test");
+
+  // THEN
+  // expectCDK(pipelineStack).to(
+  //   haveResourceLike("AWS::CodePipeline::Pipeline", {
+  //     Stages: arrayWith(
+  //       objectLike({
+  //         Name: "Test",
+  //       })
+  //     ),
+  //   })
+  // );
 });
