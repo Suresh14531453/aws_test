@@ -121,6 +121,30 @@ export class PipelineStack extends cdk.Stack {
    
 
   }
+  // public addServiceStage(
+  //   serviceStack: ServiceStack,
+  //   stageName: string
+  // ): IStage {
+  //   return this.pipeline.addStage({
+  //     stageName: stageName,
+  //     actions: [
+  //       new CloudFormationCreateUpdateStackAction({
+  //         actionName: "Service_Update",
+  //         stackName: serviceStack.stackName,
+  //         templatePath: this.cdkBuildOutput.atPath(
+  //           `${serviceStack.stackName}.template.json`
+  //         ),
+  //         adminPermissions: true,
+  //         parameterOverrides: {
+  //           ...serviceStack.serviceCode.assign(
+  //             this.serviceBuildOutput.s3Location
+  //           ),
+  //         },
+  //         extraInputs: [this.serviceBuildOutput],
+  //       }),
+  //     ],
+  //   });
+  // }
   public addServiceStage(
     serviceStack: ServiceStack,
     stageName: string
@@ -145,41 +169,6 @@ export class PipelineStack extends cdk.Stack {
       ],
     });
   }
-
-
-  // public addServiceStage(serviceStack: ServiceStack, stageName: string) {
-  //   this.pipeline.addStage({
-  //     stageName: stageName,
-  //     actions: [
-  //       new CloudFormationCreateUpdateStackAction({
-  //         actionName: "Service_Update",
-  //         stackName: serviceStack.stackName,
-  //         templatePath: this.cdkBuildOutput.atPath(
-  //           `${serviceStack.stackName}.template.json`
-  //         ),
-  //         adminPermissions: true,
-  //         parameterOverrides: {
-  //           ...serviceStack.serviceCode.assign(
-  //             this.serviceBuildOutput.s3Location
-  //           ),
-  //         },
-  //         extraInputs: [this.serviceBuildOutput],
-  //       }),
-  //     ],
-  //   });
-  // }
-  // addBillingStackToStage(billingStack: BillingStack, stage: IStage) {
-  //   stage.addAction(
-  //     new CloudFormationCreateUpdateStackAction({
-  //       actionName: "Billing_Update",
-  //       stackName: billingStack.stackName,
-  //       templatePath: this.cdkBuildOutput.atPath(
-  //         `${billingStack.stackName}.template.json`
-  //       ),
-  //       adminPermissions: true,
-  //     })
-  //   );
-  // }
   public addServiceIntegrationTestToStage(
     stage: IStage,
     serviceEndpoint: string
