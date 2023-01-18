@@ -33,6 +33,7 @@
     "@aws-cdk/aws-lambda": "^1.188.0",
     "@aws-cdk/aws-sns": "^1.188.0",
     "@aws-cdk/aws-sns-subscriptions": "^1.188.0",
+    "@aws-cdk/aws-synthetics-alpha": "^2.60.0-alpha.0",
     "aws-cdk-lib": "2.60.0",
     "constructs": "^10.1.221",
     "jest-junit": "^12.0.0",
