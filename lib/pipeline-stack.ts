@@ -32,7 +32,7 @@ export class PipelineStack extends cdk.Stack {
       }
     );
     this.pipelineNotificationsTopic.addSubscription(
-      new EmailSubscription("Gtofig@hotmail.com")
+      new EmailSubscription("sureshsahu1453@gmail.com")
     );
    this.pipeline=new Pipeline(this,'Pipeline',{
       pipelineName: "Pipeline",
